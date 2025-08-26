@@ -1,0 +1,60 @@
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #1a1a1a;
+    color: #f0f0f0;
+}
+.card {
+    background-color: #2a2a2a;
+    border: 1px solid #444;
+}
+.btn-primary {
+    background-color: #c5a05b;
+    color: #1a1a1a;
+    transition: background-color 0.3s;
+}
+.btn-primary:hover {
+    background-color: #d4b57a;
+}
+.btn-secondary {
+    background-color: #3a3a3a;
+    color: #f0f0f0;
+    border: 1px solid #555;
+    transition: background-color 0.3s, border-color 0.3s;
+}
+.btn-secondary:hover {
+    background-color: #4a4a4a;
+}
+.btn-secondary.active {
+    background-color: #c5a05b;
+    color: #1a1a1a;
+    border-color: #c5a05b;
+}
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 8px;
+    background: #555;
+    border-radius: 5px;
+    outline: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    background: #c5a05b;
+    cursor: pointer;
+    border-radius: 50%;
+}
+input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    background: #c5a05b;
+    cursor: pointer;
+    border-radius: 50%;
+}
+
+#shofarSVG {
+    filter: drop-shadow(0 0 15px rgba(255, 223, 186, 0.3));
+}
