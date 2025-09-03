@@ -91,7 +91,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
     
-    // Play a note when interacting with sliders
     let isPlaying = false;
     [frequencySlider, amplitudeSlider].forEach(slider => {
         slider.addEventListener('mousedown', () => {
@@ -175,7 +174,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const h = canvas.height;
         const midY = h / 2;
         
-        // Desenha o tubo se não for corda
         if (!isString) {
             ctx.fillStyle = '#444';
             ctx.fillRect(0, midY - 30, w, 5);
@@ -196,9 +194,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const amplitude = 25 / harmonics.length;
             harmonics.forEach(n => {
                 const k = (n * Math.PI) / w;
-                if (isOpenClosed) { // Harmônicos ímpares para tubo aberto-fechado
+                if (isOpenClosed) {
                     totalY += amplitude * Math.cos(k * x) * Math.sin(time * n);
-                } else { // Corda e tubo aberto-aberto
+                } else {
                     totalY += amplitude * Math.sin(k * x) * Math.cos(time * n);
                 }
             });
@@ -206,10 +204,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         ctx.stroke();
 
-        // Desenha nós e ventres se apenas um harmônico estiver ativo
         if (harmonics.length === 1) {
             const n = harmonics[0];
-            // Nós (vermelho)
             ctx.fillStyle = '#FF4136';
             for (let i = 0; i <= n; i++) {
                  if (isString || (!isString && !isOpenClosed)) {
@@ -218,7 +214,6 @@ document.addEventListener('DOMContentLoaded', () => {
                      if (i > 0) ctx.fillRect(((2*i-1)*w)/(2*n) -2, midY - 2, 4,4);
                  }
             }
-            // Ventres (verde)
             ctx.fillStyle = '#2ECC40';
             for (let i = 0; i < n; i++) {
                 if (isString || (!isString && !isOpenClosed)) {
@@ -240,6 +235,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // --- SEÇÃO 3: FÍSICA DO SHOFAR ---
+    // --- INÍCIO DA SEÇÃO MODIFICADA ---
     const tekiahBtn = document.getElementById('tekiah-btn');
     const shevarimBtn = document.getElementById('shevarim-btn');
     const teruahBtn = document.getElementById('teruah-btn');
@@ -255,11 +251,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }).toDestination();
 
     const shofarHarmonics = [
-        { note: 'A2', gain: 1.0 },    // Fundamental (1º)
-        { note: 'A3', gain: 0.6 },    // 3º harmônico (aproximado)
-        { note: 'E4', gain: 0.4 },    // 5º harmônico (aproximado)
-        { note: 'A4', gain: 0.25 },   // 7º harmônico (aproximado)
-        { note: 'C#5', gain: 0.15 },  // 9º harmônico (aproximado)
+        { note: 'A2', gain: 1.0 },
+        { note: 'A3', gain: 0.6 },
+        { note: 'E4', gain: 0.4 },
+        { note: 'A4', gain: 0.25 },
+        { note: 'C#5', gain: 0.15 },
     ];
     const shofarNotes = shofarHarmonics.map(h => h.note);
 
@@ -342,9 +338,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         showAnalysis();
     });
+    // --- FIM DA SEÇÃO MODIFICADA ---
 
     // Inicializa desenhos
     drawSoundWave();
     animate();
     drawAnalyser(false);
 });
+
