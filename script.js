@@ -319,84 +319,145 @@ function setupHarmonicSelectors(container, activeHarmonicsArray) {
     });
 }
 
-// --- SEÇÃO 5: ANALISADOR DO SHOFAR ---
-const playShofarButton = document.getElementById('playShofarButton');
+// --- COLE ESTE NOVO CÓDIGO NO LUGAR DO ANTIGO ---
+// --- SEÇÃO 5: A FÍSICA DO SHOFAR (LÓGICA CORRIGIDA) ---
+const tekiahBtn = document.getElementById('tekiah-btn');
+const shevarimBtn = document.getElementById('shevarim-btn');
+const teruahBtn = document.getElementById('teruah-btn');
 const analyzerCanvas = document.getElementById('analyzerCanvas');
-const analyzerCtx = analyzerCanvas.getContext('2d');
 const shofarWaveCanvas = document.getElementById('shofarWaveCanvas');
-const shofarWaveCtx = shofarWaveCanvas.getContext('2d');
+const comparisonAnalysis = document.getElementById('comparison-analysis');
 
-const shofarRecipe = [
-    { harmonic: 1, amp: 1.0 },
-    { harmonic: 3, amp: 0.6 },
-    { harmonic: 5, amp: 0.3 },
-    { harmonic: 7, amp: 0.15 }
+// Criamos uma nova variável para o sintetizador do Shofar.
+let shofarSynth; 
+
+// Aprimoramos a sua função de inicialização de áudio para também criar o sintetizador do Shofar.
+// Esta é a principal correção para o som.
+(function aprimorarInicializacaoDeAudio() {
+    const originalInitializeAudio = window.initializeAudio;
+    window.initializeAudio = async function() {
+        // Roda a sua função original primeiro para criar o synth e o polySynth.
+        await originalInitializeAudio.apply(this, arguments);
+        // Agora, cria o sintetizador do Shofar, se ele ainda não existir.
+        if (window.Tone && !shofarSynth) {
+            shofarSynth = new Tone.PolySynth(Tone.Synth, {
+                oscillator: { type: 'sine' },
+                volume: -12,
+                envelope: { attack: 0.1, decay: 0.2, sustain: 0.8, release: 0.4 }
+            }).toDestination();
+        }
+    };
+})();
+
+let analyzerCtx = analyzerCanvas?.getContext('2d');
+let shofarWaveCtx = shofarWaveCanvas?.getContext('2d');
+let shofarAnimationId;
+
+const shofarHarmonics = [
+    { note: 'A2', gain: 1.0 }, { note: 'A3', gain: 0.6 },
+    { note: 'E4', gain: 0.4 }, { note: 'A4', gain: 0.25 },
+    { note: 'C#5', gain: 0.15 },
 ];
-let isShofarPlaying = false;
+const shofarNotes = shofarHarmonics.map(h => h.note);
 
-function drawAnalyzer(recipe) {
-    if (!analyzerCanvas) return;
-    const width = analyzerCanvas.width;
-    const height = analyzerCanvas.height;
-    const barWidth = width / (recipe.length * 2);
-    analyzerCtx.clearRect(0, 0, width, height);
-    
-    recipe.forEach((item, index) => {
-        const barHeight = item.amp * (height * 0.9);
-        const x = (index * 2 + 0.5) * barWidth;
-        const y = height - barHeight;
+function drawAnalyzer(active = false) {
+    if (!analyzerCtx) return;
+    const w = analyzerCanvas.width;
+    const h = analyzerCanvas.height;
+    analyzerCtx.clearRect(0, 0, w, h);
+    analyzerCtx.font = '12px Inter';
+    analyzerCtx.textAlign = 'center';
 
-        analyzerCtx.fillStyle = '#c5a05b';
-        analyzerCtx.fillRect(x, y, barWidth, barHeight);
-
-        analyzerCtx.fillStyle = '#f0f0f0';
-        analyzerCtx.textAlign = 'center';
-        analyzerCtx.fillText(`${item.harmonic}º`, x + barWidth / 2, height - 5);
+    const barWidth = w / (shofarHarmonics.length * 1.5);
+    shofarHarmonics.forEach((harmonic, i) => {
+        const barHeight = active ? harmonic.gain * (h - 20) : 0;
+        const x = (i * barWidth * 1.5) + (barWidth / 2);
+        analyzerCtx.fillStyle = active ? '#c5a05b' : '#555';
+        analyzerCtx.fillRect(x, h - 15 - barHeight, barWidth, barHeight);
+        analyzerCtx.fillStyle = '#aaa';
+        analyzerCtx.fillText(harmonic.note, x + barWidth / 2, h - 5);
     });
 }
 
-function drawShofarWave(recipe) {
-    if (!shofarWaveCanvas) return;
-    const width = shofarWaveCanvas.width;
-    const height = shofarWaveCanvas.height;
-    const baseAmplitude = height / 4;
-    shofarWaveCtx.clearRect(0, 0, width, height);
-    shofarWaveCtx.beginPath();
-    shofarWaveCtx.strokeStyle = 'rgba(255, 223, 186, 0.7)';
-    shofarWaveCtx.lineWidth = 2;
-
-    for (let x = 0; x < width; x++) {
-        let totalY = 0;
-        recipe.forEach(item => {
-            const n = item.harmonic;
-            const amplitude = baseAmplitude * item.amp;
-            totalY += Math.cos(n * Math.PI * x / (2 * width)) * Math.cos(time * n) * amplitude;
-        });
-        if (x === 0) shofarWaveCtx.moveTo(x, height / 2 + totalY);
-        else shofarWaveCtx.lineTo(x, height / 2 + totalY);
+function animateShofarWave(duration) {
+    if (!shofarWaveCtx) return;
+    let startTime = null;
+    function loop(currentTime) {
+        if (shofarAnimationId) cancelAnimationFrame(shofarAnimationId);
+        if (!startTime) startTime = currentTime;
+        const elapsedTime = currentTime - startTime;
+        
+        if (elapsedTime > duration) {
+            shofarWaveCtx.clearRect(0, 0, shofarWaveCanvas.width, shofarWaveCanvas.height);
+            drawAnalyzer(false);
+            return;
+        }
+        shofarWaveCtx.clearRect(0, 0, shofarWaveCanvas.width, shofarWaveCanvas.height);
+        shofarWaveCtx.beginPath();
+        shofarWaveCtx.strokeStyle = 'rgba(255, 223, 186, 0.7)';
+        shofarWaveCtx.lineWidth = 2;
+        const w = shofarWaveCanvas.width;
+        const h = shofarWaveCanvas.height;
+        for (let x = 0; x < w; x++) {
+            let totalY = 0;
+            shofarHarmonics.forEach((h, i) => {
+                const freq = (i * 2 + 1);
+                const amp = h.gain * (h.note === 'A2' ? 0.2 : 0.1);
+                totalY += Math.sin(x * 0.05 * freq + elapsedTime * 0.01) * amp;
+            });
+            shofarWaveCtx.lineTo(x, h/2 + totalY * h * Math.sin( (x/w) * Math.PI ));
+        }
+        shofarWaveCtx.stroke();
+        shofarAnimationId = requestAnimationFrame(loop);
     }
-    shofarWaveCtx.stroke();
+    drawAnalyzer(true);
+    shofarAnimationId = requestAnimationFrame(loop);
 }
 
-playShofarButton?.addEventListener('click', async () => {
-    await initializeAudio();
-    if (!polySynth) return;
+function showAnalysis() {
+    if(comparisonAnalysis) {
+        comparisonAnalysis.classList.remove('hidden');
+    }
+}
 
-    const frequencies = shofarRecipe.map(item => F0 * item.harmonic);
-    
-    polySynth.releaseAll();
-    polySynth.triggerAttackRelease(frequencies, '1.5s');
-    
-    drawAnalyzer(shofarRecipe);
-    isShofarPlaying = true;
-    setTimeout(() => {
-        isShofarPlaying = false;
-        if(shofarWaveCtx) {
-            shofarWaveCtx.clearRect(0, 0, shofarWaveCanvas.width, shofarWaveCanvas.height);
-        }
-    }, 1500);
+tekiahBtn?.addEventListener('click', async () => {
+    await initializeAudio(); // Garante que o som está liberado
+    if (!shofarSynth) return;
+    const duration = 2.5;
+    shofarSynth.triggerAttackRelease(shofarNotes, duration);
+    animateShofarWave(duration * 1000);
+    showAnalysis();
 });
 
+shevarimBtn?.addEventListener('click', async () => {
+    await initializeAudio(); // Garante que o som está liberado
+    if (!shofarSynth) return;
+    const now = Tone.now();
+    const duration = 0.6;
+    const gap = 0.2;
+    shofarSynth.triggerAttackRelease(shofarNotes, duration, now);
+    shofarSynth.triggerAttackRelease(shofarNotes, duration, now + duration + gap);
+    shofarSynth.triggerAttackRelease(shofarNotes, duration, now + 2 * (duration + gap));
+    animateShofarWave(duration * 1000);
+    setTimeout(() => animateShofarWave(duration * 1000), (duration + gap) * 1000);
+    setTimeout(() => animateShofarWave(duration * 1000), 2 * (duration + gap) * 1000);
+    showAnalysis();
+});
+
+teruahBtn?.addEventListener('click', async () => {
+    await initializeAudio(); // Garante que o som está liberado
+    if (!shofarSynth) return;
+    const now = Tone.now();
+    const duration = 0.1;
+    const gap = 0.08;
+    for (let i = 0; i < 9; i++) {
+        const time = now + i * (duration + gap);
+        shofarSynth.triggerAttackRelease(shofarNotes, duration, time);
+        setTimeout(() => animateShofarWave(duration * 1000), i * (duration + gap) * 1000);
+    }
+    showAnalysis();
+});
+// --- FIM DO NOVO CÓDIGO ---
 
 // --- CONFIGURAÇÃO INICIAL ---
 window.addEventListener('resize', () => {
