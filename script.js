@@ -431,4 +431,3 @@ resizeCanvas(shofarWaveCanvas);
 
 // Inicia a animação
 animateStandingWaves();
-
