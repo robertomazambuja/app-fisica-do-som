@@ -1,19 +1,39 @@
-document.addEventListener('DOMContentLoaded', () => {
+// --- Variáveis Globais ---
+// Definimos as variáveis aqui para que possam ser acessadas por todas as funções.
+let audioContextStarted = false;
+let synth, polySynth, shofarSynth; // Os sintetizadores serão criados depois que o áudio for iniciado.
+let currentWaveType = 'sine';
+let time = 0;
+const F0 = 110; // Frequência fundamental (A2)
 
-    // --- INICIALIZAÇÃO DE ÁUDIO ---
-    // Esta função "destrava" o áudio após o primeiro clique do usuário.
-    // É uma exigência de segurança dos navegadores modernos.
-    let audioInitialized = false;
-    async function initializeAudio() {
-        if (!audioInitialized && Tone.context.state !== 'running') {
-            await Tone.start();
-            console.log('Contexto de áudio iniciado com sucesso!');
-            audioInitialized = true;
-        }
+// --- Inicialização de Áudio ---
+// Esta é a função mais importante para garantir que o som funcione.
+// Ela será chamada na primeira vez que o usuário interagir com qualquer controle de som.
+async function initializeAudio() {
+    // Só executa uma vez.
+    if (!audioContextStarted && window.Tone) {
+        await Tone.start();
+        console.log('Contexto de áudio iniciado.');
+        
+        // Criamos os "instrumentos" virtuais DEPOIS que o áudio foi liberado pelo navegador.
+        synth = new Tone.Synth({ oscillator: { type: currentWaveType } }).toDestination();
+        polySynth = new Tone.PolySynth(Tone.Synth, {
+            oscillator: { type: 'sine' },
+            volume: -12
+        }).toDestination();
+        shofarSynth = new Tone.PolySynth(Tone.Synth, {
+            oscillator: { type: 'sine' },
+            volume: -12,
+            envelope: { attack: 0.1, decay: 0.2, sustain: 0.8, release: 0.4 }
+        }).toDestination();
+
+        audioContextStarted = true;
     }
-    document.body.addEventListener('click', initializeAudio, { once: true });
+}
 
 
+document.addEventListener('DOMContentLoaded', () => {
+    
     // --- SEÇÃO 1: QUALIDADES DO SOM ---
     const frequencySlider = document.getElementById('frequencySlider');
     const amplitudeSlider = document.getElementById('amplitudeSlider');
@@ -22,16 +42,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const waveCanvas = document.getElementById('waveCanvas');
     const waveCtx = waveCanvas?.getContext('2d');
 
-    let synth;
-    let waveType = 'sine';
-
-    if (window.Tone) {
-        synth = new Tone.Synth({
-            oscillator: { type: 'sine' },
-            envelope: { attack: 0.01, decay: 0.1, sustain: 0.2, release: 0.1 }
-        }).toDestination();
-    }
-    
     const updateNoteDisplay = (frequency) => {
         if (!noteDisplay) return;
         const note = Tone.Frequency(frequency).toNote();
@@ -55,7 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
         for (let x = 0; x < width; x++) {
             let y = 0;
             const angle = (x / waveLength) * Math.PI * 2;
-            switch (waveType) {
+            switch (currentWaveType) {
                 case 'sine': y = Math.sin(angle); break;
                 case 'square': y = Math.sign(Math.sin(angle)); break;
                 case 'sawtooth': y = 1 - 2 * ((x % waveLength) / waveLength); break;
@@ -81,8 +91,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     let isPlaying = false;
     [frequencySlider, amplitudeSlider].forEach(slider => {
-        slider?.addEventListener('mousedown', () => {
-            if (synth && Tone.context.state === 'running') {
+        slider?.addEventListener('mousedown', async () => {
+            await initializeAudio();
+            if (synth) {
                 synth.triggerAttack(synth.frequency.value);
                 isPlaying = true;
             }
@@ -105,8 +116,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.target.classList.contains('timbre-btn')) {
             document.querySelectorAll('.timbre-btn').forEach(btn => btn.classList.remove('active'));
             e.target.classList.add('active');
-            waveType = e.target.dataset.wave;
-            if (synth) synth.oscillator.type = waveType;
+            currentWaveType = e.target.dataset.wave;
+            if (synth) synth.oscillator.type = currentWaveType;
             drawWave();
         }
     });
@@ -114,16 +125,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- SEÇÃO 2: ONDAS ESTACIONÁRIAS ---
     const oscillationSpeedSlider = document.getElementById('oscillationSpeedSlider');
     const speedLabel = document.getElementById('speedLabel');
-    let time = 0;
-    const F0 = 110;
-    let polySynth;
-    if (window.Tone) {
-        polySynth = new Tone.PolySynth(Tone.Synth, {
-            oscillator: { type: 'sine' },
-            envelope: { attack: 0.02, decay: 0.1, sustain: 0.3, release: 0.2 },
-            volume: -12
-        }).toDestination();
-    }
     
     const stationarySystems = {
         string: { canvas: document.getElementById('stringCanvas'), harmonics: [1], container: document.getElementById('stringHarmonicsContainer'), info: document.getElementById('stringInfo') },
@@ -140,7 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.clearRect(0, 0, width, height);
 
         if (type.includes('tube')) {
-            ctx.fillStyle = '#6b7280'; // Cor da parede do tubo
+            ctx.fillStyle = '#6b7280';
             const tubeWallThickness = 8;
             const tubeInnerHeight = height / 4;
             ctx.fillRect(0, midY - tubeInnerHeight - tubeWallThickness, width, tubeWallThickness);
@@ -168,17 +169,14 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.stroke();
 
         if (system.harmonics.length === 1) {
-            const n = system.harmonics[0];
             system.info.innerHTML = `Observe os <strong class="text-red-400">Nós</strong> e <strong class="text-green-400">Ventres</strong>.`;
-            // Desenha Nós (vermelho) e Ventres (verde)
-            // ... (lógica de desenho dos nós e ventres)
         } else {
              system.info.textContent = "A superposição de ondas cria um padrão complexo.";
         }
     }
 
     function playStationaryHarmonics(system) {
-        if (!polySynth || Tone.context.state !== 'running') return;
+        if (!polySynth) return;
         const frequencies = system.harmonics.map(n => F0 * n);
         polySynth.releaseAll();
         if (frequencies.length > 0) {
@@ -188,16 +186,18 @@ document.addEventListener('DOMContentLoaded', () => {
     
     Object.keys(stationarySystems).forEach(key => {
         const system = stationarySystems[key];
-        system.container?.addEventListener('click', e => {
+        system.container?.addEventListener('click', async (e) => {
             if (e.target.tagName === 'BUTTON') {
+                await initializeAudio();
                 const harmonic = parseInt(e.target.dataset.harmonic);
                 const isActive = e.target.classList.contains('active');
                 
-                // Lógica de seleção corrigida
-                if (isActive && system.harmonics.length > 1) {
-                    e.target.classList.remove('active');
-                    system.harmonics = system.harmonics.filter(h => h !== harmonic);
-                } else if (!isActive) {
+                if (isActive) {
+                    if (system.harmonics.length > 1) {
+                        e.target.classList.remove('active');
+                        system.harmonics = system.harmonics.filter(h => h !== harmonic);
+                    }
+                } else {
                     e.target.classList.add('active');
                     system.harmonics.push(harmonic);
                 }
@@ -223,18 +223,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const shofarWaveCanvas = document.getElementById('shofarWaveCanvas');
     const comparisonAnalysis = document.getElementById('comparison-analysis');
     
-    let shofarSynth, analyzerCtx, shofarWaveCtx, shofarAnimationId;
-
-    if (window.Tone) {
-        shofarSynth = new Tone.PolySynth(Tone.Synth, {
-            oscillator: { type: 'sine' },
-            volume: -12,
-            envelope: { attack: 0.1, decay: 0.2, sustain: 0.8, release: 0.4 }
-        }).toDestination();
-    }
-    
-    if (analyzerCanvas) analyzerCtx = analyzerCanvas.getContext('2d');
-    if (shofarWaveCanvas) shofarWaveCtx = shofarWaveCanvas.getContext('2d');
+    let analyzerCtx = analyzerCanvas?.getContext('2d');
+    let shofarWaveCtx = shofarWaveCanvas?.getContext('2d');
+    let shofarAnimationId;
     
     const shofarHarmonics = [
         { note: 'A2', gain: 1.0 }, { note: 'A3', gain: 0.6 },
@@ -301,16 +292,18 @@ document.addEventListener('DOMContentLoaded', () => {
         comparisonAnalysis?.classList.remove('hidden');
     }
     
-    tekiahBtn?.addEventListener('click', () => {
-        if (!shofarSynth || Tone.context.state !== 'running') return;
+    tekiahBtn?.addEventListener('click', async () => {
+        await initializeAudio();
+        if (!shofarSynth) return;
         const duration = 2.5;
         shofarSynth.triggerAttackRelease(shofarNotes, duration);
         animateShofarWave(duration * 1000);
         showAnalysis();
     });
 
-    shevarimBtn?.addEventListener('click', () => {
-        if (!shofarSynth || Tone.context.state !== 'running') return;
+    shevarimBtn?.addEventListener('click', async () => {
+        await initializeAudio();
+        if (!shofarSynth) return;
         const now = Tone.now();
         const duration = 0.6;
         const gap = 0.2;
@@ -323,8 +316,9 @@ document.addEventListener('DOMContentLoaded', () => {
         showAnalysis();
     });
 
-    teruahBtn?.addEventListener('click', () => {
-        if (!shofarSynth || Tone.context.state !== 'running') return;
+    teruahBtn?.addEventListener('click', async () => {
+        await initializeAudio();
+        if (!shofarSynth) return;
         const now = Tone.now();
         const duration = 0.1;
         const gap = 0.08;
@@ -338,7 +332,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Animação principal
     function animate() {
-        const speed = (oscillationSpeedSlider?.value || 10) / 100;
+        let speed = 0.1;
+        if(oscillationSpeedSlider) {
+             speed = (oscillationSpeedSlider.value || 10) / 100;
+        }
         time += speed;
         drawStationaryWave(stationarySystems.string, 'string');
         drawStationaryWave(stationarySystems.tube, 'tube');
@@ -347,6 +344,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Inicializações
+    document.querySelectorAll('canvas').forEach(c => {
+        if(c) {
+            c.width = c.clientWidth;
+            c.height = c.clientHeight;
+        }
+    });
     drawWave();
     animate();
     drawAnalyzer(false);
