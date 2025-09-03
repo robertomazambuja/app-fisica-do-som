@@ -1,260 +1,350 @@
-/* Reset Básico */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+document.addEventListener('DOMContentLoaded', () => {
+    // Inicializa o contexto de áudio após interação do usuário
+    let audioInitialized = false;
+    document.body.addEventListener('click', () => {
+        if (!audioInitialized && Tone.context.state !== 'running') {
+            Tone.start();
+            console.log('Audio context started');
+            audioInitialized = true;
+        }
+    }, { once: true });
 
-body {
-    font-family: 'Inter', sans-serif;
-    background-color: #121212;
-    color: #E0E0E0;
-    line-height: 1.6;
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-}
+    // --- SEÇÃO 1: QUALIDADES DO SOM ---
+    const frequencySlider = document.getElementById('frequency');
+    const amplitudeSlider = document.getElementById('amplitude');
+    const noteDisplay = document.getElementById('note-display');
+    const waveButtons = {
+        sine: document.getElementById('sine-wave'),
+        square: document.getElementById('square-wave'),
+        sawtooth: document.getElementById('sawtooth-wave'),
+        triangle: document.getElementById('triangle-wave'),
+    };
+    const soundWaveCanvas = document.getElementById('sound-wave-canvas');
+    const s_ctx = soundWaveCanvas.getContext('2d');
 
-header {
-    background: #1F1F1F;
-    text-align: center;
-    padding: 2rem 1rem;
-    border-bottom: 2px solid #D4AF37;
-}
+    const synth = new Tone.Synth({
+        oscillator: { type: 'sine' },
+        envelope: { attack: 0.01, decay: 0.1, sustain: 0.2, release: 0.1 }
+    }).toDestination();
 
-header h1 {
-    color: #D4AF37;
-    margin-bottom: 0.5rem;
-}
+    let waveType = 'sine';
 
-main {
-    flex: 1;
-    width: 90%;
-    max-width: 1200px;
-    margin: 2rem auto;
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-}
+    function updateNoteDisplay(frequency) {
+        const note = Tone.Frequency(frequency).toNote();
+        noteDisplay.textContent = note;
+    }
 
-.card {
-    background: #1E1E1E;
-    border-radius: 10px;
-    padding: 2rem;
-    border: 1px solid #333;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-}
+    function drawSoundWave() {
+        s_ctx.clearRect(0, 0, soundWaveCanvas.width, soundWaveCanvas.height);
+        s_ctx.beginPath();
+        s_ctx.strokeStyle = '#D4AF37';
+        s_ctx.lineWidth = 2;
 
-.card h2 {
-    color: #D4AF37;
-    margin-bottom: 1rem;
-    border-bottom: 1px solid #555;
-    padding-bottom: 0.5rem;
-}
+        const width = soundWaveCanvas.width;
+        const height = soundWaveCanvas.height;
+        const midY = height / 2;
+        const amplitude = (amplitudeSlider.value * height) / 2.2;
+        const frequency = frequencySlider.value;
+        const waveLength = (1 / frequency) * 10000;
 
-.instruction-box {
-    background-color: #2a2a2a;
-    border-left: 4px solid #D4AF37;
-    padding: 1rem;
-    margin-bottom: 1.5rem;
-    border-radius: 4px;
-}
+        for (let x = 0; x < width; x++) {
+            let y = 0;
+            const angle = (x / waveLength) * Math.PI * 2;
+            switch (waveType) {
+                case 'sine':
+                    y = Math.sin(angle);
+                    break;
+                case 'square':
+                    y = Math.sign(Math.sin(angle));
+                    break;
+                case 'sawtooth':
+                    y = 1 - 2 * ( (x % waveLength) / waveLength );
+                    break;
+                case 'triangle':
+                    y = Math.abs( ( ( (x / waveLength) * 2) % 2) - 1) * 2 - 1;
+                    break;
+            }
+            s_ctx.lineTo(x, midY + y * amplitude);
+        }
+        s_ctx.stroke();
+    }
 
-.instruction-box p {
-    font-size: 0.95rem;
-    color: #ccc;
-}
+    frequencySlider.addEventListener('input', () => {
+        const freq = frequencySlider.value;
+        synth.frequency.value = freq;
+        updateNoteDisplay(freq);
+        drawSoundWave();
+    });
 
-.description, .small-desc {
-    font-size: 0.9rem;
-    color: #aaa;
-    margin-bottom: 1rem;
-}
+    amplitudeSlider.addEventListener('input', () => {
+        synth.volume.value = Tone.gainToDb(amplitudeSlider.value);
+        drawSoundWave();
+    });
 
-/* Controles de Som */
-.sound-controls {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 2rem;
-}
+    Object.entries(waveButtons).forEach(([type, button]) => {
+        button.addEventListener('click', () => {
+            Object.values(waveButtons).forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            waveType = type;
+            synth.oscillator.type = type;
+            drawSoundWave();
+        });
+    });
+    
+    // Play a note when interacting with sliders
+    let isPlaying = false;
+    [frequencySlider, amplitudeSlider].forEach(slider => {
+        slider.addEventListener('mousedown', () => {
+             if (Tone.context.state === 'running') {
+                synth.triggerAttack(synth.frequency.value);
+                isPlaying = true;
+            }
+        });
+         slider.addEventListener('mouseup', () => {
+            if(isPlaying) {
+                synth.triggerRelease();
+                isPlaying = false;
+            }
+        });
+        slider.addEventListener('mouseleave', () => {
+            if(isPlaying) {
+                synth.triggerRelease();
+                isPlaying = false;
+            }
+        });
+    });
 
-.controls-left {
-    flex: 1;
-    min-width: 300px;
-}
 
-.controls-right {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background: #2a2a2a;
-    padding: 1rem;
-    border-radius: 8px;
-}
+    // --- SEÇÃO 2: ONDAS ESTACIONÁRIAS ---
+    const speedSlider = document.getElementById('oscillation-speed');
+    const harmonicButtons = document.querySelectorAll('.harmonic-btn');
 
-.slider-group, .timbre-group {
-    margin-bottom: 1.5rem;
-}
+    const canvases = {
+        string: document.getElementById('string-wave-canvas'),
+        'open-open': document.getElementById('open-open-tube-canvas'),
+        'open-closed': document.getElementById('open-closed-tube-canvas'),
+    };
 
-label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: bold;
-}
+    const contexts = {
+        string: canvases.string.getContext('2d'),
+        'open-open': canvases['open-open'].getContext('2d'),
+        'open-closed': canvases['open-closed'].getContext('2d'),
+    };
 
-input[type="range"] {
-    width: 100%;
-    cursor: pointer;
-    accent-color: #D4AF37;
-}
+    let activeHarmonics = {
+        string: [], 'open-open': [], 'open-closed': []
+    };
 
-.slider-labels {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.8rem;
-    color: #888;
-}
+    let time = 0;
+    const polySynth = new Tone.PolySynth(Tone.Synth, {
+        oscillator: { type: 'sine' },
+        envelope: { attack: 0.02, decay: 0.1, sustain: 0.3, release: 0.2 }
+    }).toDestination();
+    const fundamental = 110; // A2
 
-.button-group, .button-group-harmonics {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-}
+    function playHarmonics(system) {
+        polySynth.releaseAll();
+        const harmonicsToPlay = activeHarmonics[system].map(h => {
+             const freq = fundamental * h;
+             return Tone.Frequency(freq).toNote();
+        });
+        if(harmonicsToPlay.length > 0 && Tone.context.state === 'running') {
+             polySynth.triggerAttack(harmonicsToPlay);
+        }
+    }
+    
+    harmonicButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            button.classList.toggle('active');
+            const system = button.dataset.system;
+            const harmonic = parseInt(button.dataset.harmonic);
+            
+            const index = activeHarmonics[system].indexOf(harmonic);
+            if (index > -1) {
+                activeHarmonics[system].splice(index, 1);
+            } else {
+                activeHarmonics[system].push(harmonic);
+            }
+            playHarmonics(system);
+        });
+    });
 
-button {
-    background: #333;
-    color: #E0E0E0;
-    border: 1px solid #555;
-    padding: 0.75rem 1rem;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-}
+    function drawStationaryWave(ctx, canvas, harmonics, isString = true, isOpenClosed = false) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const w = canvas.width;
+        const h = canvas.height;
+        const midY = h / 2;
+        
+        // Desenha o tubo se não for corda
+        if (!isString) {
+            ctx.fillStyle = '#444';
+            ctx.fillRect(0, midY - 30, w, 5);
+            ctx.fillRect(0, midY + 30, w, 5);
+            if (isOpenClosed) {
+                ctx.fillRect(w - 5, midY - 30, 5, 65);
+            }
+        }
 
-button:hover {
-    background: #444;
-    border-color: #D4AF37;
-}
+        ctx.beginPath();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = '#D4AF37';
+        
+        if (harmonics.length === 0) return;
 
-button.active {
-    background: #D4AF37;
-    color: #121212;
-    font-weight: bold;
-    border-color: #D4AF37;
-}
+        for (let x = 0; x < w; x++) {
+            let totalY = 0;
+            const amplitude = 25 / harmonics.length;
+            harmonics.forEach(n => {
+                const k = (n * Math.PI) / w;
+                if (isOpenClosed) { // Harmônicos ímpares para tubo aberto-fechado
+                    totalY += amplitude * Math.cos(k * x) * Math.sin(time * n);
+                } else { // Corda e tubo aberto-aberto
+                    totalY += amplitude * Math.sin(k * x) * Math.cos(time * n);
+                }
+            });
+            ctx.lineTo(x, midY - totalY);
+        }
+        ctx.stroke();
 
-canvas {
-    background: #000;
-    border: 1px solid #444;
-    border-radius: 5px;
-}
+        // Desenha nós e ventres se apenas um harmônico estiver ativo
+        if (harmonics.length === 1) {
+            const n = harmonics[0];
+            // Nós (vermelho)
+            ctx.fillStyle = '#FF4136';
+            for (let i = 0; i <= n; i++) {
+                 if (isString || (!isString && !isOpenClosed)) {
+                    if (i < n) ctx.fillRect((i * w) / n - 2, midY - 2, 4, 4);
+                 } else if (isOpenClosed) {
+                     if (i > 0) ctx.fillRect(((2*i-1)*w)/(2*n) -2, midY - 2, 4,4);
+                 }
+            }
+            // Ventres (verde)
+            ctx.fillStyle = '#2ECC40';
+            for (let i = 0; i < n; i++) {
+                if (isString || (!isString && !isOpenClosed)) {
+                     ctx.fillRect(((2 * i + 1) * w) / (2 * n) - 2, midY - 2, 4, 4);
+                } else if (isOpenClosed) {
+                    ctx.fillRect((i*w)/n -2, midY - 2, 4, 4);
+                }
+            }
+        }
+    }
+    
+    function animate() {
+        const speed = speedSlider.value / 100;
+        time += speed;
+        drawStationaryWave(contexts.string, canvases.string, activeHarmonics.string, true, false);
+        drawStationaryWave(contexts['open-open'], canvases['open-open'], activeHarmonics['open-open'], false, false);
+        drawStationaryWave(contexts['open-closed'], canvases['open-closed'], activeHarmonics['open-closed'], false, true);
+        requestAnimationFrame(animate);
+    }
+    
+    // --- SEÇÃO 3: FÍSICA DO SHOFAR ---
+    const tekiahBtn = document.getElementById('tekiah-btn');
+    const shevarimBtn = document.getElementById('shevarim-btn');
+    const teruahBtn = document.getElementById('teruah-btn');
+    const shofarWaveGroup = document.getElementById('shofar-wave-group');
+    const shofarAnalyserCanvas = document.getElementById('shofar-analyser-canvas');
+    const a_ctx = shofarAnalyserCanvas.getContext('2d');
+    const comparisonAnalysis = document.getElementById('comparison-analysis');
 
-.canvas-title {
-    font-weight: bold;
-    margin-bottom: 0.5rem;
-}
+    const shofarSynth = new Tone.PolySynth(Tone.Synth, {
+        oscillator: { type: 'sine' },
+        volume: -12,
+        envelope: { attack: 0.1, decay: 0.2, sustain: 0.8, release: 0.4 }
+    }).toDestination();
 
-.canvas-caption {
-    font-size: 0.8rem;
-    color: #888;
-    margin-top: 0.5rem;
-}
+    const shofarHarmonics = [
+        { note: 'A2', gain: 1.0 },    // Fundamental (1º)
+        { note: 'A3', gain: 0.6 },    // 3º harmônico (aproximado)
+        { note: 'E4', gain: 0.4 },    // 5º harmônico (aproximado)
+        { note: 'A4', gain: 0.25 },   // 7º harmônico (aproximado)
+        { note: 'C#5', gain: 0.15 },  // 9º harmônico (aproximado)
+    ];
+    const shofarNotes = shofarHarmonics.map(h => h.note);
 
-/* Ondas Estacionárias */
-.stationary-wave-container {
-    display: flex;
-    justify-content: space-around;
-    flex-wrap: wrap;
-    gap: 1.5rem;
-}
+    function drawAnalyser(active = false) {
+        const w = shofarAnalyserCanvas.width;
+        const h = shofarAnalyserCanvas.height;
+        a_ctx.clearRect(0, 0, w, h);
+        a_ctx.fillStyle = '#555';
+        a_ctx.font = '12px Inter';
+        a_ctx.textAlign = 'center';
 
-.wave-column {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-    background: #2a2a2a;
-    padding: 1.5rem;
-    border-radius: 8px;
-    flex: 1;
-    min-width: 280px;
-}
+        const barWidth = w / (shofarHarmonics.length * 1.5);
+        shofarHarmonics.forEach((harmonic, i) => {
+            const barHeight = active ? harmonic.gain * (h - 20) : 0;
+            const x = (i * barWidth * 1.5) + (barWidth / 2);
+            a_ctx.fillStyle = active ? '#D4AF37' : '#555';
+            a_ctx.fillRect(x, h - 15 - barHeight, barWidth, barHeight);
+            a_ctx.fillStyle = '#aaa';
+            a_ctx.fillText(harmonic.note, x + barWidth / 2, h - 5);
+        });
+    }
 
-.wave-column h3 {
-    font-size: 1rem;
-    color: #ccc;
-    text-align: center;
-}
+    let shofarAnimationId;
+    function animateShofarWave(duration) {
+        let startTime = null;
+        function loop(currentTime) {
+            if (!startTime) startTime = currentTime;
+            const elapsedTime = currentTime - startTime;
+            
+            if (elapsedTime > duration) {
+                shofarWaveGroup.style.display = 'none';
+                drawAnalyser(false);
+                cancelAnimationFrame(shofarAnimationId);
+                return;
+            }
 
-/* Seção do Shofar */
-.shofar-container {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
-    gap: 2rem;
-    margin-bottom: 2rem;
-}
+            const path = `M 40 50 C 60 40, 100 40, 120 45 S 150 ${45 + Math.sin(elapsedTime * 0.1) * 5}, 170 50`;
+            shofarWaveGroup.innerHTML = `<path d="${path}" stroke="#FFF" stroke-width="2" fill="none" />`;
+            shofarAnimationId = requestAnimationFrame(loop);
+        }
+        shofarWaveGroup.style.display = 'block';
+        drawAnalyser(true);
+        shofarAnimationId = requestAnimationFrame(loop);
+    }
+    
+    function showAnalysis() {
+        comparisonAnalysis.style.display = 'block';
+    }
+    
+    tekiahBtn.addEventListener('click', () => {
+        if (Tone.context.state !== 'running') return;
+        const duration = 2; // 2 segundos
+        shofarSynth.triggerAttackRelease(shofarNotes, duration);
+        animateShofarWave(duration * 1000);
+        showAnalysis();
+    });
 
-.shofar-visual, .shofar-analyser {
-    flex: 1;
-    min-width: 300px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
+    shevarimBtn.addEventListener('click', () => {
+        if (Tone.context.state !== 'running') return;
+        const now = Tone.now();
+        const duration = 0.5;
+        shofarSynth.triggerAttackRelease(shofarNotes, duration, now);
+        shofarSynth.triggerAttackRelease(shofarNotes, duration, now + 0.7);
+        shofarSynth.triggerAttackRelease(shofarNotes, duration, now + 1.4);
+        
+        animateShofarWave(duration * 1000);
+        setTimeout(() => animateShofarWave(duration * 1000), 700);
+        setTimeout(() => animateShofarWave(duration * 1000), 1400);
+        showAnalysis();
+    });
 
-#shofar-svg {
-    max-width: 100%;
-    height: auto;
-}
+    teruahBtn.addEventListener('click', () => {
+        if (Tone.context.state !== 'running') return;
+        const now = Tone.now();
+        const duration = 0.1;
+        for (let i = 0; i < 9; i++) {
+            const time = now + i * 0.15;
+            shofarSynth.triggerAttackRelease(shofarNotes, duration, time);
+            setTimeout(() => animateShofarWave(duration * 1000), i * 150);
+        }
+        showAnalysis();
+    });
 
-.shofar-toques {
-    display: flex;
-    justify-content: space-around;
-    width: 100%;
-    flex-wrap: wrap;
-    gap: 1rem;
-    text-align: center;
-}
-
-.toque-item {
-    flex: 1;
-    min-width: 250px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.toque-item p {
-    font-size: 0.9rem;
-    color: #aaa;
-}
-
-/* Nova Caixa de Análise */
-.analysis-box {
-    display: none; /* Começa escondida */
-    background-color: #2a2a2a;
-    border: 1px solid #D4AF37;
-    border-radius: 8px;
-    padding: 1.5rem;
-    margin-top: 2.5rem;
-    width: 100%;
-}
-.analysis-box h3 {
-    color: #D4AF37;
-    margin-bottom: 0.5rem;
-    text-align: center;
-}
-
-footer {
-    text-align: center;
-    padding: 1rem;
-    margin-top: 2rem;
-    font-size: 0.8rem;
-    color: #888;
-    background: #1F1F1F;
-    border-top: 1px solid #333;
-}
+    // Inicializa desenhos
+    drawSoundWave();
+    animate();
+    drawAnalyser(false);
+});
