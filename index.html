@@ -130,42 +130,50 @@
                 </div>
             </section>
             
-            <section id="shofar-analyzer" class="card rounded-xl p-6 md:p-8">
-                <h2 class="text-2xl font-bold mb-4 text-amber-300">A Física do Shofar: A Superposição em Ação</h2>
-                
-                <!-- CAIXA DE INSTRUÇÃO 3 -->
-                <div class="bg-gray-800 border border-amber-500/30 rounded-lg p-4 mb-6 text-center text-amber-100">
-                    <p>Clique em <strong class="font-semibold text-amber-300">'Tocar o Shofar'</strong> para ouvir seu som característico. Observe a onda complexa que se forma dentro do instrumento e veja no analisador quais <strong class="font-semibold text-amber-300">harmônicos</strong> compõem o seu timbre único.</p>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-                    <div class="text-center">
-                        <div id="shofar-container" class="relative w-full max-w-md mx-auto mb-4">
-                            <canvas id="shofarWaveCanvas" class="absolute top-0 left-0 w-full h-full"></canvas>
-                            <svg id="shofarSVG" viewBox="0 0 100 50" class="w-full h-auto relative z-10">
-                               <path d="M 5 25 C 10 10, 30 10, 40 20 S 60 40, 80 40 C 95 40, 95 30, 95 30 L 90 20 C 90 20, 85 35, 78 35 C 58 35, 45 15, 38 25 S 15 35, 5 25 Z" fill="transparent" stroke="#c5a05b" stroke-width="1.5"/>
-                            </svg>
-                        </div>
-                        <div class="flex justify-center items-center gap-4">
-                            <button id="playShofarButton" class="btn-primary font-bold py-3 px-6 rounded-lg text-lg">Tocar o Shofar</button>
-                            <button id="resetAnalyzerButton" class="btn-secondary font-bold py-3 px-6 rounded-lg text-lg hidden">Zerar</button>
-                        </div>
-                    </div>
-                    <div>
-                        <h3 class="font-bold text-lg mb-3 text-amber-200">Analisador de Timbre</h3>
-                        <p class="text-sm text-gray-300 mb-4">O som do shofar é uma combinação de harmônicos ímpares. A nota fundamental tocada é <strong id="shofarNoteDisplay" class="text-amber-400">A2</strong>. O gráfico abaixo mostra a "receita" do som que você ouve.</p>
-                        <canvas id="analyzerCanvas" class="w-full h-48 bg-gray-800 rounded-lg border border-gray-600"></canvas>
-                    </div>
-                </div>
-            </section>
-
-        </main>
-
-        <footer class="text-center mt-12 text-gray-500 text-sm">
-            <p>Criado para fins educacionais. Explore a ciência por trás da música.</p>
-        </footer>
+          <!-- COLE ESTE NOVO CÓDIGO NO LUGAR DO ANTIGO -->
+<section id="shofar-analyzer" class="card rounded-xl p-6 md:p-8">
+    <h2 class="text-2xl font-bold mb-4 text-amber-300">A Física do Shofar: Os Toques Tradicionais</h2>
+    
+    <!-- CAIXA DE INSTRUÇÃO 3 (ATUALIZADA) -->
+    <div class="bg-gray-800 border border-amber-500/30 rounded-lg p-4 mb-6 text-center text-amber-100">
+        <p>Clique em cada um dos toques tradicionais. Observe a onda e o analisador para ver a "receita" de harmônicos que compõem seu timbre único.</p>
     </div>
 
-    <script src="script.js" defer></script>
-</body>
-</html>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center mb-8">
+        <!-- Lado Esquerdo: Visualização do Shofar -->
+        <div id="shofar-visual-container" class="relative w-full max-w-md mx-auto">
+             <canvas id="shofarWaveCanvas" class="absolute top-0 left-0 w-full h-full"></canvas>
+             <svg id="shofarSVG" viewBox="0 0 100 50" class="w-full h-auto relative z-10">
+                 <path d="M 5 25 C 10 10, 30 10, 40 20 S 60 40, 80 40 C 95 40, 95 30, 95 30 L 90 20 C 90 20, 85 35, 78 35 C 58 35, 45 15, 38 25 S 15 35, 5 25 Z" fill="transparent" stroke="#c5a05b" stroke-width="1.5"/>
+             </svg>
+        </div>
+        <!-- Lado Direito: Analisador de Timbre -->
+        <div>
+            <h3 class="font-bold text-lg mb-3 text-amber-200">Analisador de Timbre</h3>
+            <p class="text-sm text-gray-300 mb-4">O gráfico mostra a intensidade de cada harmônico que forma o som do shofar. A nota fundamental é <strong id="shofarNoteDisplay" class="text-amber-400">A2</strong>.</p>
+            <canvas id="analyzerCanvas" class="w-full h-48 bg-gray-800 rounded-lg border border-gray-600"></canvas>
+        </div>
+    </div>
+
+    <!-- Seção dos Botões de Toque -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+        <div class="toque-item">
+            <button id="tekiah-btn" class="btn-primary font-bold py-3 px-6 rounded-lg text-lg w-full">Tekiyá</button>
+            <p class="text-sm text-gray-400 mt-2">som contínuo, como um longo suspiro</p>
+        </div>
+        <div class="toque-item">
+            <button id="shevarim-btn" class="btn-primary font-bold py-3 px-6 rounded-lg text-lg w-full">Shevarim</button>
+            <p class="text-sm text-gray-400 mt-2">três sons interrompidos, como soluços</p>
+        </div>
+        <div class="toque-item">
+            <button id="teruah-btn" class="btn-primary font-bold py-3 px-6 rounded-lg text-lg w-full">Teruá</button>
+            <p class="text-sm text-gray-400 mt-2">nove sons curtíssimos, como suspiros entrecortados</p>
+        </div>
+    </div>
+    
+    <!-- Caixa de Análise Comparativa (Começa Escondida) -->
+    <div id="comparison-analysis" class="hidden mt-8 bg-gray-800 border-2 border-amber-500/50 rounded-lg p-6 text-center text-amber-100">
+        <h3 class="font-bold text-xl mb-2 text-amber-300">Análise Comparativa</h3>
+        <p>Note que o <strong class="font-semibold text-amber-300">timbre</strong> (a "receita" de harmônicos mostrada no analisador) é o mesmo para todos os toques. O que muda é o <strong class="font-semibold text-amber-300">ritmo</strong> e a <strong class="font-semibold text-amber-300">duração</strong>, criando significados e sentimentos diferentes.</p>
+    </div>
+</section>
