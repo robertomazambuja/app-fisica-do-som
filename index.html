@@ -1,154 +1,191 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Física do Som com o Shofar</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Explorando a Onda Sonora</title>
+    
+    <!-- Scripts de bibliotecas externas -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+    
+    <!-- Links para fontes e seu arquivo CSS -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
 </head>
-<body>
-    <header>
-        <h1>A Física do Som e o Shofar</h1>
-        <p>Uma jornada interativa para entender as ondas sonoras</p>
-    </header>
+<body class="antialiased">
 
-    <main>
-        <!-- Seção 1: Qualidades do Som -->
-        <section class="card">
-            <h2>As 3 Qualidades do Som</h2>
-            <div class="instruction-box">
-                <p>Use os controles deslizantes para mudar a <strong>altura</strong> (frequência) e o <strong>volume</strong> (amplitude) da onda. Clique nos botões de <strong>timbre</strong> para ouvir e ver como o formato da onda altera a "cor" do som.</p>
-            </div>
-            <p class="description">As ondas sonoras têm três características principais que podemos controlar, ouvir e visualizar:</p>
-            <div class="sound-controls">
-                <div class="controls-left">
-                    <div class="slider-group">
-                        <label for="frequency">1. Frequência (Controla a <strong>Altura</strong> da nota) - <span id="note-display">A4</span></label>
-                        <input type="range" id="frequency" min="110" max="880" value="440" step="1">
-                        <div class="slider-labels"><span>Grave (Baixa)</span><span>Agudo (Alta)</span></div>
-                    </div>
-                    <div class="slider-group">
-                        <label for="amplitude">2. Amplitude (Controla o <strong>Volume</strong>)</label>
-                        <input type="range" id="amplitude" min="0" max="1" value="0.5" step="0.01">
-                        <div class="slider-labels"><span>Baixo</span><span>Alto</span></div>
-                    </div>
-                    <div class="timbre-group">
-                        <label>3. Timbre (Controla a <strong>"Cor"</strong> do som)</label>
-                        <p class="small-desc">O timbre é o que faz um violino e um piano soarem diferentes, mesmo tocando a mesma nota. Ele é definido pelo formato da onda sonora.</p>
-                        <div class="button-group">
-                            <button id="sine-wave" class="active">Pura (Senoide)</button>
-                            <button id="square-wave">Quadrada</button>
-                            <button id="sawtooth-wave">Dente de Serra</button>
-                            <button id="triangle-wave">Triangular</button>
+    <div class="container mx-auto p-4 md:p-8 max-w-7xl">
+        
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-amber-500">Explorando a Onda Sonora</h1>
+            <p class="mt-4 text-lg text-amber-100">Uma jornada interativa para entender as ondas sonoras</p>
+        </header>
+
+        <main class="space-y-12">
+            <section id="explorando-a-onda" class="card rounded-xl p-6 md:p-8">
+                <h2 class="text-2xl font-bold mb-4 text-amber-300">As 3 Qualidades do Som</h2>
+                
+                <!-- CAIXA DE INSTRUÇÃO 1 -->
+                <div class="bg-gray-800 border border-amber-500/30 rounded-lg p-4 mb-6 text-center text-amber-100">
+                    <p>Use os controles deslizantes para mudar a <strong class="font-semibold text-amber-300">altura</strong> (frequência) e o <strong class="font-semibold text-amber-300">volume</strong> (amplitude) da onda. Clique nos botões de <strong class="font-semibold text-amber-300">timbre</strong> para ouvir e ver como o formato da onda altera a "cor" do som.</p>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-8 items-start">
+                    <!-- Controles -->
+                    <div class="space-y-6">
+                        <div>
+                            <label for="frequencySlider" class="flex justify-between items-center mb-2 font-semibold">
+                                <span>1. Frequência (Controla a <strong class="text-amber-400">Altura</strong>)</span>
+                                <span id="noteDisplay" class="text-amber-300 font-mono text-lg bg-gray-700 px-2 rounded">A3</span>
+                            </label>
+                            <input id="frequencySlider" type="range" min="110" max="880" value="220" step="1">
+                            <div class="flex justify-between text-sm text-gray-400 mt-1">
+                                <span>Grave (Baixa)</span>
+                                <span>Agudo (Alta)</span>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="amplitudeSlider" class="block mb-2 font-semibold">2. Amplitude (Controla o <strong class="text-amber-400">Volume</strong>)</label>
+                            <input id="amplitudeSlider" type="range" min="0" max="1" value="0.5" step="0.01">
+                            <div class="flex justify-between text-sm text-gray-400 mt-1">
+                                <span>Baixo</span>
+                                <span>Alto</span>
+                            </div>
+                        </div>
+                         <div>
+                            <label class="block mb-2 font-semibold">3. Timbre (Controla a <strong class="text-amber-400">"Cor"</strong> do som)</label>
+                            <p class="text-sm text-gray-300 mb-3">O timbre é o que faz um violino e um piano soarem diferentes, mesmo tocando a mesma nota.</p>
+                            <div id="timbreContainer" class="flex flex-wrap gap-3">
+                                <button data-wave="sine" class="btn-secondary font-bold py-2 px-4 rounded-lg timbre-btn active">Pura (Senoide)</button>
+                                <button data-wave="square" class="btn-secondary font-bold py-2 px-4 rounded-lg timbre-btn">Quadrada</button>
+                                <button data-wave="sawtooth" class="btn-secondary font-bold py-2 px-4 rounded-lg timbre-btn">Dente de Serra</button>
+                                <button data-wave="triangle" class="btn-secondary font-bold py-2 px-4 rounded-lg timbre-btn">Triangular</button>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="controls-right">
-                    <p class="canvas-title">Visualização da Onda Sonora</p>
-                    <canvas id="sound-wave-canvas" width="400" height="200"></canvas>
-                    <p class="canvas-caption">Mova os controles para ver e ouvir a mudança em tempo real!</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Seção 2: Ondas Estacionárias -->
-        <section class="card">
-            <h2>Ondas Estacionárias: Superposição de Harmônicos</h2>
-            <div class="instruction-box">
-                 <p>Selecione um ou mais <strong>harmônicos</strong> para cada sistema (corda e tubos) e veja como as ondas se somam. Use o controle de <strong>velocidade</strong> para observar melhor a vibração. Note como o som muda ao adicionar mais harmônicos.</p>
-            </div>
-            <div class="stationary-wave-controls">
-                <label for="oscillation-speed">Velocidade da Oscilação:</label>
-                <input type="range" id="oscillation-speed" min="1" max="10" value="3" step="1">
-            </div>
-            <div class="stationary-wave-container">
-                <!-- Coluna da Corda -->
-                <div class="wave-column">
-                    <h3>Em uma Corda Vibrante (Nota fundamental: A2 - 110 Hz)</h3>
-                    <canvas id="string-wave-canvas" width="300" height="150"></canvas>
-                    <div class="button-group-harmonics">
-                        <button class="harmonic-btn" data-system="string" data-harmonic="1">1º Harmônico</button>
-                        <button class="harmonic-btn" data-system="string" data-harmonic="2">2º Harmônico</button>
-                        <button class="harmonic-btn" data-system="string" data-harmonic="3">3º Harmônico</button>
-                        <button class="harmonic-btn" data-system="string" data-harmonic="4">4º Harmônico</button>
+                    
+                    <div class="sticky top-8">
+                        <p class="text-center mb-2 font-semibold">Visualização da Onda Sonora</p>
+                        <canvas id="waveCanvas" class="w-full h-48 bg-gray-800 rounded-lg border border-gray-600"></canvas>
+                        <p class="mt-4 text-sm text-gray-300 text-center">Mova os controles para ver e ouvir a mudança em tempo real!</p>
                     </div>
                 </div>
-                <!-- Coluna do Tubo Aberto-Aberto -->
-                <div class="wave-column">
-                    <h3>Em um Tubo Aberto-Aberto (Nota fundamental: A2 - 110 Hz)</h3>
-                    <canvas id="open-open-tube-canvas" width="300" height="150"></canvas>
-                     <div class="button-group-harmonics">
-                        <button class="harmonic-btn" data-system="open-open" data-harmonic="1">1º Harmônico</button>
-                        <button class="harmonic-btn" data-system="open-open" data-harmonic="2">2º Harmônico</button>
-                        <button class="harmonic-btn" data-system="open-open" data-harmonic="3">3º Harmônico</button>
-                        <button class="harmonic-btn" data-system="open-open" data-harmonic="4">4º Harmônico</button>
+            </section>
+
+            <section id="ondas-estacionarias" class="card rounded-xl p-6 md:p-8">
+                <h2 class="text-2xl font-bold mb-4 text-amber-300">Ondas Estacionárias: Superposição de Harmônicos</h2>
+                
+                <!-- CAIXA DE INSTRUÇÃO 2 -->
+                <div class="bg-gray-800 border border-amber-500/30 rounded-lg p-4 mb-6 text-center text-amber-100">
+                     <p>Selecione um ou mais <strong class="font-semibold text-amber-300">harmônicos</strong> para cada sistema (corda e tubos) e veja como as ondas se somam. Use o controle de <strong class="font-semibold text-amber-300">velocidade</strong> para observar melhor a vibração. Note como o som muda ao adicionar mais harmônicos.</p>
+                </div>
+                
+                <div class="mb-8">
+                    <label for="oscillationSpeedSlider" class="block mb-2 font-semibold">Velocidade da Oscilação: <span id="speedLabel">Média</span></label>
+                    <input id="oscillationSpeedSlider" type="range" min="1" max="30" value="10" step="1">
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div>
+                        <h3 class="font-bold text-lg mb-3 text-amber-200">Em uma Corda Vibrante</h3>
+                        <canvas id="stringCanvas" class="w-full h-48 bg-gray-800 rounded-lg border border-gray-600 mb-4"></canvas>
+                        <label class="block mb-2 font-semibold">Selecione os Harmônicos (n):</label>
+                        <div id="stringHarmonicsContainer" class="flex flex-wrap gap-2">
+                            <button data-harmonic="1" class="btn-secondary harmonic-selector-string font-bold py-2 px-4 rounded-lg active">1</button>
+                            <button data-harmonic="2" class="btn-secondary harmonic-selector-string font-bold py-2 px-4 rounded-lg">2</button>
+                            <button data-harmonic="3" class="btn-secondary harmonic-selector-string font-bold py-2 px-4 rounded-lg">3</button>
+                            <button data-harmonic="4" class="btn-secondary harmonic-selector-string font-bold py-2 px-4 rounded-lg">4</button>
+                        </div>
+                        <p id="stringInfo" class="text-sm text-gray-400 mt-2">Observe os <strong class="text-red-400">Nós</strong> e <strong class="text-green-400">Ventres</strong>.</p>
+                    </div>
+
+                    <div>
+                        <h3 class="font-bold text-lg mb-3 text-amber-200">Em um Tubo Aberto-Aberto</h3>
+                        <canvas id="tubeCanvas" class="w-full h-48 bg-gray-800 rounded-lg border border-gray-600 mb-4"></canvas>
+                        <label class="block mb-2 font-semibold">Selecione os Harmônicos (n):</label>
+                        <div id="tubeHarmonicsContainer" class="flex flex-wrap gap-2">
+                            <button data-harmonic="1" class="btn-secondary harmonic-selector-tube font-bold py-2 px-4 rounded-lg active">1</button>
+                            <button data-harmonic="2" class="btn-secondary harmonic-selector-tube font-bold py-2 px-4 rounded-lg">2</button>
+                            <button data-harmonic="3" class="btn-secondary harmonic-selector-tube font-bold py-2 px-4 rounded-lg">3</button>
+                            <button data-harmonic="4" class="btn-secondary harmonic-selector-tube font-bold py-2 px-4 rounded-lg">4</button>
+                        </div>
+                        <p id="tubeInfo" class="text-sm text-gray-400 mt-2">Observe os <strong class="text-red-400">Nós</strong> e <strong class="text-green-400">Ventres</strong>.</p>
+                    </div>
+                    
+                    <div>
+                        <h3 class="font-bold text-lg mb-3 text-amber-200">Em um Tubo Aberto-Fechado</h3>
+                        <canvas id="closedTubeCanvas" class="w-full h-48 bg-gray-800 rounded-lg border border-gray-600 mb-4"></canvas>
+                        <label class="block mb-2 font-semibold">Selecione os Harmônicos (n):</label>
+                        <div id="closedTubeHarmonicsContainer" class="flex flex-wrap gap-2">
+                            <button data-harmonic="1" class="btn-secondary harmonic-selector-closed-tube font-bold py-2 px-4 rounded-lg active">1</button>
+                            <button data-harmonic="3" class="btn-secondary harmonic-selector-closed-tube font-bold py-2 px-4 rounded-lg">3</button>
+                            <button data-harmonic="5" class="btn-secondary harmonic-selector-closed-tube font-bold py-2 px-4 rounded-lg">5</button>
+                            <button data-harmonic="7" class="btn-secondary harmonic-selector-closed-tube font-bold py-2 px-4 rounded-lg">7</button>
+                        </div>
+                        <p id="closedTubeInfo" class="text-sm text-gray-400 mt-2">Apenas harmônicos ímpares são possíveis.</p>
                     </div>
                 </div>
-                <!-- Coluna do Tubo Aberto-Fechado -->
-                <div class="wave-column">
-                    <h3>Em um Tubo Aberto-Fechado (Nota fundamental: A2 - 110 Hz)</h3>
-                    <canvas id="open-closed-tube-canvas" width="300" height="150"></canvas>
-                     <div class="button-group-harmonics">
-                        <button class="harmonic-btn" data-system="open-closed" data-harmonic="1">1º Harmônico</button>
-                        <button class="harmonic-btn" data-system="open-closed" data-harmonic="3">3º Harmônico</button>
-                        <button class="harmonic-btn" data-system="open-closed" data-harmonic="5">5º Harmônico</button>
-                        <button class="harmonic-btn" data-system="open-closed" data-harmonic="7">7º Harmônico</button>
-                    </div>
-                </div>
-            </div>
-        </section>
+            </section>
+            
+          <!-- COLE ESTE NOVO CÓDIGO NO LUGAR DO ANTIGO -->
+<section id="shofar-analyzer" class="card rounded-xl p-6 md:p-8">
+    <h2 class="text-2xl font-bold mb-4 text-amber-300">A Física do Shofar: Os Toques Tradicionais</h2>
+    
+    <!-- CAIXA DE INSTRUÇÃO 3 (ATUALIZADA) -->
+    <div class="bg-gray-800 border border-amber-500/30 rounded-lg p-4 mb-6 text-center text-amber-100">
+        <p>Clique em cada um dos toques tradicionais. Observe a onda e o analisador para ver a "receita" de harmônicos que compõem seu timbre único.</p>
+    </div>
 
-        <!-- INÍCIO DA SEÇÃO MODIFICADA -->
-        <section class="card shofar-section">
-            <h2>A Física do Shofar: A Superposição em Ação</h2>
-             <div class="instruction-box">
-                 <p>Clique em cada um dos toques tradicionais do Shofar. Observe a onda e o analisador para ver a "receita" de harmônicos que compõem seu timbre único.</p>
-            </div>
-            <div class="shofar-container">
-                <div class="shofar-visual">
-                     <svg id="shofar-svg" viewBox="0 0 200 100">
-                        <path d="M 10 50 Q 20 20 60 30 T 150 40 L 190 20 L 195 80 L 150 60 Q 60 70 30 80 T 10 50 Z" fill="#D4AF37" stroke="#8B4513" stroke-width="2"/>
-                        <g id="shofar-wave-group" style="display: none;">
-                           <!-- A onda será desenhada aqui pelo JavaScript -->
-                        </g>
-                    </svg>
-                </div>
-                <div class="shofar-analyser">
-                    <canvas id="shofar-analyser-canvas" width="300" height="150"></canvas>
-                </div>
-            </div>
-            <div class="shofar-toques">
-                <div class="toque-item">
-                    <button id="tekiah-btn">Tekiyá</button>
-                    <p>som contínuo, como um longo suspiro</p>
-                </div>
-                <div class="toque-item">
-                     <button id="shevarim-btn">Shevarim</button>
-                    <p>três sons interrompidos, como soluços</p>
-                </div>
-                <div class="toque-item">
-                     <button id="teruah-btn">Teruá</button>
-                    <p>nove sons curtíssimos, como suspiros entrecortados</p>
-                </div>
-            </div>
-            <div id="comparison-analysis" class="analysis-box">
-                <h3>Análise Comparativa</h3>
-                <p>Note que o <strong>timbre</strong> (a "receita" de harmônicos mostrada no analisador) é o mesmo para todos os toques. O que muda é o <strong>ritmo</strong> e a <strong>duração</strong>, criando significados e sentimentos diferentes.</p>
-            </div>
-        </section>
-        <!-- FIM DA SEÇÃO MODIFICADA -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center mb-8">
+        <!-- Lado Esquerdo: Visualização do Shofar -->
+        <div id="shofar-visual-container" class="relative w-full max-w-md mx-auto">
+             <canvas id="shofarWaveCanvas" class="absolute top-0 left-0 w-full h-full"></canvas>
+             <svg id="shofarSVG" viewBox="0 0 100 50" class="w-full h-auto relative z-10">
+                 <path d="M 5 25 C 10 10, 30 10, 40 20 S 60 40, 80 40 C 95 40, 95 30, 95 30 L 90 20 C 90 20, 85 35, 78 35 C 58 35, 45 15, 38 25 S 15 35, 5 25 Z" fill="transparent" stroke="#c5a05b" stroke-width="1.5"/>
+             </svg>
+        </div>
+        <!-- Lado Direito: Analisador de Timbre -->
+        <div>
+            <h3 class="font-bold text-lg mb-3 text-amber-200">Analisador de Timbre</h3>
+            <p class="text-sm text-gray-300 mb-4">O gráfico mostra a intensidade de cada harmônico que forma o som do shofar. A nota fundamental é <strong id="shofarNoteDisplay" class="text-amber-400">A2</strong>.</p>
+            <canvas id="analyzerCanvas" class="w-full h-48 bg-gray-800 rounded-lg border border-gray-600"></canvas>
+        </div>
+    </div>
 
-    </main>
+    <!-- Seção dos Botões de Toque -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+        <div class="toque-item">
+            <button id="tekiah-btn" class="btn-primary font-bold py-3 px-6 rounded-lg text-lg w-full">Tekiyá</button>
+            <p class="text-sm text-gray-400 mt-2">som contínuo, como um longo suspiro</p>
+        </div>
+        <div class="toque-item">
+            <button id="shevarim-btn" class="btn-primary font-bold py-3 px-6 rounded-lg text-lg w-full">Shevarim</button>
+            <p class="text-sm text-gray-400 mt-2">três sons interrompidos, como soluços</p>
+        </div>
+        <div class="toque-item">
+            <button id="teruah-btn" class="btn-primary font-bold py-3 px-6 rounded-lg text-lg w-full">Teruá</button>
+            <p class="text-sm text-gray-400 mt-2">nove sons curtíssimos, como suspiros entrecortados</p>
+        </div>
+    </div>
+    
+    <!-- Caixa de Análise Comparativa (Começa Escondida) -->
+    <div id="comparison-analysis" class="hidden mt-8 bg-gray-800 border-2 border-amber-500/50 rounded-lg p-6 text-center text-amber-100">
+        <h3 class="font-bold text-xl mb-2 text-amber-300">Análise Comparativa</h3>
+        <p>Note que o <strong class="font-semibold text-amber-300">timbre</strong> (a "receita" de harmônicos mostrada no analisador) é o mesmo para todos os toques. O que muda é o <strong class="font-semibold text-amber-300">ritmo</strong> e a <strong class="font-semibold text-amber-300">duração</strong>, criando significados e sentimentos diferentes.</p>
+    </div>
+</section>
 
-    <footer>
-        <p>Projeto de Física do Som - Desenvolvido com o auxílio de IA</p>
-    </footer>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
-    <script src="script.js"></script>
+        </main>
+
+        <footer class="text-center mt-12 text-gray-500 text-sm">
+            <p>Criado para fins educacionais. Explore a ciência por trás da música.</p>
+        </footer>
+    </div>
+
+    <script src="script.js" defer></script>
 </body>
 </html>
-
