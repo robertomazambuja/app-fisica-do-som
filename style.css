@@ -1,60 +1,260 @@
-body {
-    font-family: 'Inter', sans-serif;
-    background-color: #1a1a1a;
-    color: #f0f0f0;
-}
-.card {
-    background-color: #2a2a2a;
-    border: 1px solid #444;
-}
-.btn-primary {
-    background-color: #c5a05b;
-    color: #1a1a1a;
-    transition: background-color 0.3s;
-}
-.btn-primary:hover {
-    background-color: #d4b57a;
-}
-.btn-secondary {
-    background-color: #3a3a3a;
-    color: #f0f0f0;
-    border: 1px solid #555;
-    transition: background-color 0.3s, border-color 0.3s;
-}
-.btn-secondary:hover {
-    background-color: #4a4a4a;
-}
-.btn-secondary.active {
-    background-color: #c5a05b;
-    color: #1a1a1a;
-    border-color: #c5a05b;
-}
-input[type="range"] {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 100%;
-    height: 8px;
-    background: #555;
-    border-radius: 5px;
-    outline: none;
-}
-input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 20px;
-    height: 20px;
-    background: #c5a05b;
-    cursor: pointer;
-    border-radius: 50%;
-}
-input[type="range"]::-moz-range-thumb {
-    width: 20px;
-    height: 20px;
-    background: #c5a05b;
-    cursor: pointer;
-    border-radius: 50%;
+/* Reset Básico */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-#shofarSVG {
-    filter: drop-shadow(0 0 15px rgba(255, 223, 186, 0.3));
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #121212;
+    color: #E0E0E0;
+    line-height: 1.6;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+header {
+    background: #1F1F1F;
+    text-align: center;
+    padding: 2rem 1rem;
+    border-bottom: 2px solid #D4AF37;
+}
+
+header h1 {
+    color: #D4AF37;
+    margin-bottom: 0.5rem;
+}
+
+main {
+    flex: 1;
+    width: 90%;
+    max-width: 1200px;
+    margin: 2rem auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.card {
+    background: #1E1E1E;
+    border-radius: 10px;
+    padding: 2rem;
+    border: 1px solid #333;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.card h2 {
+    color: #D4AF37;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid #555;
+    padding-bottom: 0.5rem;
+}
+
+.instruction-box {
+    background-color: #2a2a2a;
+    border-left: 4px solid #D4AF37;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    border-radius: 4px;
+}
+
+.instruction-box p {
+    font-size: 0.95rem;
+    color: #ccc;
+}
+
+.description, .small-desc {
+    font-size: 0.9rem;
+    color: #aaa;
+    margin-bottom: 1rem;
+}
+
+/* Controles de Som */
+.sound-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+}
+
+.controls-left {
+    flex: 1;
+    min-width: 300px;
+}
+
+.controls-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #2a2a2a;
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+.slider-group, .timbre-group {
+    margin-bottom: 1.5rem;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+}
+
+input[type="range"] {
+    width: 100%;
+    cursor: pointer;
+    accent-color: #D4AF37;
+}
+
+.slider-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: #888;
+}
+
+.button-group, .button-group-harmonics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+button {
+    background: #333;
+    color: #E0E0E0;
+    border: 1px solid #555;
+    padding: 0.75rem 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+button:hover {
+    background: #444;
+    border-color: #D4AF37;
+}
+
+button.active {
+    background: #D4AF37;
+    color: #121212;
+    font-weight: bold;
+    border-color: #D4AF37;
+}
+
+canvas {
+    background: #000;
+    border: 1px solid #444;
+    border-radius: 5px;
+}
+
+.canvas-title {
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.canvas-caption {
+    font-size: 0.8rem;
+    color: #888;
+    margin-top: 0.5rem;
+}
+
+/* Ondas Estacionárias */
+.stationary-wave-container {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+}
+
+.wave-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    background: #2a2a2a;
+    padding: 1.5rem;
+    border-radius: 8px;
+    flex: 1;
+    min-width: 280px;
+}
+
+.wave-column h3 {
+    font-size: 1rem;
+    color: #ccc;
+    text-align: center;
+}
+
+/* Seção do Shofar */
+.shofar-container {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.shofar-visual, .shofar-analyser {
+    flex: 1;
+    min-width: 300px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#shofar-svg {
+    max-width: 100%;
+    height: auto;
+}
+
+.shofar-toques {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 1rem;
+    text-align: center;
+}
+
+.toque-item {
+    flex: 1;
+    min-width: 250px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.toque-item p {
+    font-size: 0.9rem;
+    color: #aaa;
+}
+
+/* Nova Caixa de Análise */
+.analysis-box {
+    display: none; /* Começa escondida */
+    background-color: #2a2a2a;
+    border: 1px solid #D4AF37;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-top: 2.5rem;
+    width: 100%;
+}
+.analysis-box h3 {
+    color: #D4AF37;
+    margin-bottom: 0.5rem;
+    text-align: center;
+}
+
+footer {
+    text-align: center;
+    padding: 1rem;
+    margin-top: 2rem;
+    font-size: 0.8rem;
+    color: #888;
+    background: #1F1F1F;
+    border-top: 1px solid #333;
 }
