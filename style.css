@@ -187,7 +187,7 @@ canvas {
     text-align: center;
 }
 
-/* Seção do Shofar */
+/* INÍCIO DAS MODIFICAÇÕES DE ESTILO */
 .shofar-container {
     display: flex;
     flex-wrap: wrap;
@@ -233,7 +233,6 @@ canvas {
     color: #aaa;
 }
 
-/* Nova Caixa de Análise */
 .analysis-box {
     display: none; /* Começa escondida */
     background-color: #2a2a2a;
@@ -248,6 +247,7 @@ canvas {
     margin-bottom: 0.5rem;
     text-align: center;
 }
+/* FIM DAS MODIFICAÇÕES DE ESTILO */
 
 footer {
     text-align: center;
@@ -258,3 +258,4 @@ footer {
     background: #1F1F1F;
     border-top: 1px solid #333;
 }
+
